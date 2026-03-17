@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>נווט הנהר</title>
+    <title>צולחים את הורמוז</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;800;900&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -113,7 +113,7 @@
     </div>
     <div id="speedometer"><div id="speed-bar"></div></div>
     <div id="overlay">
-        <h1 id="title">⛵ נווט הנהר</h1>
+        <h1 id="title">⛵ צולחים את הורמוז</h1>
         <div class="subtitle">מהדורת פרימיום</div>
         <p id="summary" class="score-summary"></p>
         <button id="start-btn">צא להפלגה</button>
@@ -334,6 +334,11 @@ function initRiver() {
     let sx = canvas.width/2;
     for(let i=0; i<Math.ceil(canvas.height/5)+50; i++) riverPoints.push({x:sx,y:canvas.height-(i*5)});
     clouds = Array.from({length:5},()=>spawnCloud(true));
+    birds = Array.from({length:3},()=>spawnBird(true));
+}
+function spawnBird(init=false){
+    const fromL=Math.random()<0.5;
+    return {x:init?Math.random()*500:fromL?-30:530,y:20+Math.random()*120,vx:fromL?0.4+Math.random()*0.6:-(0.4+Math.random()*0.6),wingPhase:Math.random()*Math.PI*2,size:3+Math.random()*3};
 }
 
 function spawnCloud(ry=false) {
@@ -425,7 +430,15 @@ function update() {
     }
 
     for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx;p.y+=p.vy+scrollSpd*0.3;p.vx*=0.96;p.vy*=0.96;p.life-=p.decay;if(p.life<=0)particles.splice(i,1);}
-    if(frameCount%3===0){wakes.push({x:ship.x,y:ship.y+24,r:2,op:0.3});wakes.push({x:ship.x-7,y:ship.y+20,r:1.5,op:0.18});wakes.push({x:ship.x+7,y:ship.y+20,r:1.5,op:0.18});}
+    if(frameCount%2===0){
+        const wSpd=speedBoost;
+        wakes.push({x:ship.x,y:ship.y+24,r:2,op:0.3*wSpd});
+        wakes.push({x:ship.x-7-wSpd*2,y:ship.y+22,r:1.8,op:0.22*wSpd});
+        wakes.push({x:ship.x+7+wSpd*2,y:ship.y+22,r:1.8,op:0.22*wSpd});
+        wakes.push({x:ship.x-12-wSpd*3,y:ship.y+28,r:1.2,op:0.12*wSpd});
+        wakes.push({x:ship.x+12+wSpd*3,y:ship.y+28,r:1.2,op:0.12*wSpd});
+        if(wSpd>1.2){wakes.push({x:ship.x-4+(Math.random()-0.5)*6,y:ship.y+26+Math.random()*4,r:1+Math.random(),op:0.15});wakes.push({x:ship.x+4+(Math.random()-0.5)*6,y:ship.y+26+Math.random()*4,r:1+Math.random(),op:0.15});}
+    }
     for(let i=wakes.length-1;i>=0;i--){wakes[i].y+=scrollSpd;wakes[i].r+=0.5;wakes[i].op-=0.007;if(wakes[i].op<=0)wakes.splice(i,1);}
     for(let i=bankDecor.length-1;i>=0;i--){bankDecor[i].y+=scrollSpd;if(bankDecor[i].y>canvas.height+100)bankDecor.splice(i,1);}
 
@@ -459,7 +472,7 @@ function update() {
         if(e.type==='shark'){e.swimPhase+=0.07;e.x+=e.vx+Math.sin(e.swimPhase)*0.4;const p=riverPoints.find(rp=>Math.abs(rp.y-e.y)<10);if(p&&(e.x<p.x-riverWidth/2+15||e.x>p.x+riverWidth/2-15))e.vx*=-1;}
         if(e.type==='jellyfish'){e.swimPhase+=0.04;e.x+=Math.sin(e.swimPhase*0.7)*0.3+e.vx*0.3;}
         if(e.type==='octopus'){e.swimPhase+=0.06;e.x+=e.vx+Math.sin(e.swimPhase)*1.2;if(Math.random()<0.008)e.vx=-e.vx;const p=riverPoints.find(rp=>Math.abs(rp.y-e.y)<10);if(p&&(e.x<p.x-riverWidth/2+15||e.x>p.x+riverWidth/2-15))e.vx*=-1;}
-        if(e.type==='warship'){e.x+=e.vx*0.3;if(e.muzzleFlash>0)e.muzzleFlash--;e.shot++;if(e.shot>100&&e.y<ship.y&&e.y>0){const a=Math.atan2(ship.y-e.y,ship.x-e.x);bullets.push({x:e.x,y:e.y,ox:e.x,oy:e.y,vx:Math.cos(a)*5,vy:Math.sin(a)*5,trail:[],src:'w'});e.shot=0;e.muzzleFlash=6;playTone(160,0.15,'square',0.06);}const wp=riverPoints.find(rp=>Math.abs(rp.y-e.y)<10);if(wp&&(e.x<wp.x-riverWidth/2+20||e.x>wp.x+riverWidth/2-20))e.vx*=-1;}
+        if(e.type==='warship'){e.x+=e.vx*0.15;if(e.muzzleFlash>0)e.muzzleFlash--;e.shot++;if(e.shot>100&&e.y<ship.y&&e.y>0){const a=Math.atan2(ship.y-e.y,ship.x-e.x);bullets.push({x:e.x,y:e.y,ox:e.x,oy:e.y,vx:Math.cos(a)*5,vy:Math.sin(a)*5,trail:[],src:'w'});e.shot=0;e.muzzleFlash=6;playTone(160,0.15,'square',0.06);}const wp=riverPoints.find(rp=>Math.abs(rp.y-e.y)<10);if(wp&&(e.x<wp.x-riverWidth/2+20||e.x>wp.x+riverWidth/2-20))e.vx*=-1;}
         if(e.type==='tank'){if(e.muzzleFlash>0)e.muzzleFlash--;e.shot++;if(e.shot>120&&e.y<ship.y&&e.y>0){const a=Math.atan2(ship.y-e.y,ship.x-e.x);bullets.push({x:e.x+Math.cos(a)*32,y:e.y+Math.sin(a)*32,vx:Math.cos(a)*3.2,vy:Math.sin(a)*3.2,trail:[]});e.shot=0;e.muzzleFlash=6;playTone(200,0.12,'square',0.05);}}
         if(dist(ship.x,ship.y,e.x,e.y)<(e.type==='warship'?32:28)){if(shieldTimer>0){createExplosion(e.x,e.y,'#5b9ab5',15);playExplosion();}else{const eMsg=e.type==='shark'?'ננשכת על ידי כריש! 🦈':e.type==='jellyfish'?'נעקצת ממדוזה!':e.type==='octopus'?'נתפסת בתמנון! 🐙':e.type==='warship'?'התנגשת בספינת קרב!':'התנגשות עם אויב!';const eClr=e.type==='shark'?'#5a6570':e.type==='jellyfish'?'#9060a0':e.type==='octopus'?'#a04060':e.type==='warship'?'#1a1a30':'#a33';hit(eMsg);createExplosion(e.x,e.y,eClr);}enemies.splice(i,1);continue;}
         if(e.y>canvas.height+100)enemies.splice(i,1);
@@ -487,6 +500,8 @@ function update() {
         if(it.y>canvas.height+100)items.splice(i,1);
     }
     clouds.forEach(c=>{c.y+=scrollSpd*0.1;c.x+=c.speed;if(c.y>canvas.height+120)Object.assign(c,spawnCloud());if(c.x>canvas.width+120)c.x=-80;});
+    birds.forEach(b=>{b.x+=b.vx;b.wingPhase+=0.12;if(b.x<-40||b.x>canvas.width+40)Object.assign(b,spawnBird());});
+    if(birds.length<4&&Math.random()<0.002)birds.push(spawnBird());
     handleInput(); checkBanks();
     ship.bobPhase+=0.055; if(invuln>0)invuln--; if(shieldTimer>0)shieldTimer--; if(shake>0)shake*=0.87;
     if(scoreMultTimer>0)scoreMultTimer--;if(magnetTimer>0)magnetTimer--;if(speedBoostTimer>0)speedBoostTimer--;
@@ -582,7 +597,10 @@ function draw() {
     bankDecor.forEach(drawBankDecor);
 
     // Wakes
-    wakes.forEach(w=>{ctx.strokeStyle=`rgba(150,190,200,${w.op})`;ctx.lineWidth=0.7;ctx.beginPath();ctx.arc(w.x,w.y,w.r,0,Math.PI*2);ctx.stroke();});
+    wakes.forEach(w=>{
+        ctx.fillStyle=`rgba(180,210,220,${w.op*0.5})`;ctx.beginPath();ctx.arc(w.x,w.y,w.r,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle=`rgba(150,195,210,${w.op})`;ctx.lineWidth=0.7;ctx.beginPath();ctx.arc(w.x,w.y,w.r,0,Math.PI*2);ctx.stroke();
+    });
 
     // Bomb target warnings
     bombs.forEach(b=>{
@@ -636,6 +654,15 @@ function draw() {
     });
 
     clouds.forEach(drawCloud);
+    birds.forEach(b=>{
+        ctx.save();ctx.translate(b.x,b.y);
+        const wf=Math.sin(b.wingPhase)*0.6;
+        ctx.strokeStyle='rgba(30,30,30,0.35)';ctx.lineWidth=1.2;ctx.lineCap='round';
+        ctx.beginPath();ctx.moveTo(-b.size*2,wf*b.size);ctx.quadraticCurveTo(-b.size*0.5,-wf*b.size*0.8,0,0);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(b.size*2,wf*b.size);ctx.quadraticCurveTo(b.size*0.5,-wf*b.size*0.8,0,0);ctx.stroke();
+        ctx.fillStyle='rgba(25,25,25,0.3)';ctx.beginPath();ctx.arc(0,0,b.size*0.3,0,Math.PI*2);ctx.fill();
+        ctx.restore();
+    });
 
     // Fighter jets
     airplanes.forEach(a=>{
