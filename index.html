@@ -62,27 +62,40 @@
         #speed-bar { width: 100%; height: 20%; background: #d4a853; transition: height 0.15s ease; border-radius: 2px; }
         #overlay {
             position: absolute; inset: 0;
-            background: rgba(18, 20, 28, 0.94);
+            background: radial-gradient(ellipse at 50% 40%, rgba(22,35,55,0.97) 0%, rgba(12,14,20,0.98) 100%);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 100; text-align: center; padding: 20px;
             transition: opacity 0.5s ease;
-            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
         }
         #overlay.hidden { opacity: 0; pointer-events: none; }
-        h1 { font-size: 32px; font-weight: 900; margin: 0 0 4px; color: #d4a853; letter-spacing: 1px; }
-        .subtitle { font-size: 11px; color: rgba(232,228,222,0.25); margin-bottom: 32px; font-weight: 400; letter-spacing: 4px; text-transform: uppercase; }
+        h1 {
+            font-size: 36px; font-weight: 900; margin: 0 0 6px; letter-spacing: 2px;
+            background: linear-gradient(180deg, #f0d080 0%, #d4a853 40%, #b8862a 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 2px 8px rgba(180,140,50,0.3));
+        }
+        .subtitle {
+            font-size: 10px; color: rgba(180,200,220,0.35); margin-bottom: 36px;
+            font-weight: 600; letter-spacing: 6px; text-transform: uppercase;
+            border-top: 1px solid rgba(212,168,83,0.15); border-bottom: 1px solid rgba(212,168,83,0.15);
+            padding: 6px 20px;
+        }
         .score-summary { font-size: 20px; margin: 14px 0 28px; color: rgba(232,228,222,0.7); font-weight: 600; }
         button {
-            background: #3a6b4a; border: 1px solid rgba(255,255,255,0.08); color: #e8e4de;
-            padding: 14px 48px; font-size: 20px; border-radius: 8px; cursor: pointer;
-            font-weight: 800; font-family: inherit; transition: transform 0.12s, background 0.2s; letter-spacing: 1px;
+            background: linear-gradient(180deg, #4a8060 0%, #3a6b4a 100%);
+            border: 1px solid rgba(255,255,255,0.1); color: #e8e4de;
+            padding: 15px 52px; font-size: 20px; border-radius: 10px; cursor: pointer;
+            font-weight: 800; font-family: inherit; transition: transform 0.15s, box-shadow 0.2s;
+            letter-spacing: 2px; box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
         }
-        button:hover { background: #4a8060; transform: translateY(-1px); }
-        button:active { transform: translateY(1px); background: #2d5a3a; }
-        .instructions { margin-top: 28px; font-size: 12px; line-height: 2.2; color: rgba(232,228,222,0.3); max-width: 90vw; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1); }
+        button:active { transform: translateY(1px); box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .instructions { margin-top: 32px; font-size: 11px; line-height: 2.4; color: rgba(180,200,220,0.28); max-width: 90vw; }
         .instructions kbd {
-            display: inline-block; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
-            padding: 1px 8px; border-radius: 4px; font-family: inherit; font-size: 11px;
+            display: inline-block; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,168,83,0.12);
+            padding: 2px 9px; border-radius: 5px; font-family: inherit; font-size: 10px; color: rgba(212,168,83,0.4);
         }
         #level-up-toast {
             position: absolute; top: 50%; left: 50%;
@@ -113,8 +126,8 @@
     </div>
     <div id="speedometer"><div id="speed-bar"></div></div>
     <div id="overlay">
-        <h1 id="title">⛵ צולחים את הורמוז</h1>
-        <div class="subtitle">מהדורת פרימיום</div>
+        <h1 id="title">צולחים את הורמוז</h1>
+        <div class="subtitle">⚓ מהדורת פרימיום ⚓</div>
         <p id="summary" class="score-summary"></p>
         <button id="start-btn">צא להפלגה</button>
         <div class="instructions">
@@ -253,25 +266,26 @@ let currentLevel = 1, lives = 3, invuln = 0, shieldTimer = 0, shake = 0, frameCo
 let baseSpeed = 2.1, speedBoost = 1.0, riverWidth = 200;
 let riverPoints = [], items = [], enemies = [], bullets = [], particles = [], clouds = [], wakes = [];
 let airplanes = [], bombs = [], popups = [], birds = [];
+let lastSeaCreature = '';
 let scoreMultTimer = 0, magnetTimer = 0, speedBoostTimer = 0;
 const ship = { x: 0, y: 0, angle: 0, targetAngle: 0, bobPhase: 0 };
 
 const config = [
-    { min: 0,   spd: 2.1, width: 220, mine: 0.170, rock: 0.11, tank: 0.23, freq: 93 },
-    { min: 40,  spd: 2.2, width: 215, mine: 0.180, rock: 0.12, tank: 0.25, freq: 90 },
-    { min: 85,  spd: 2.3, width: 210, mine: 0.190, rock: 0.13, tank: 0.27, freq: 86 },
-    { min: 130, spd: 2.5, width: 205, mine: 0.200, rock: 0.14, tank: 0.29, freq: 82 },
-    { min: 180, spd: 2.7, width: 200, mine: 0.210, rock: 0.15, tank: 0.31, freq: 78 },
-    { min: 235, spd: 2.9, width: 195, mine: 0.220, rock: 0.16, tank: 0.33, freq: 74 },
-    { min: 295, spd: 3.0, width: 190, mine: 0.230, rock: 0.17, tank: 0.35, freq: 70 },
-    { min: 360, spd: 3.2, width: 185, mine: 0.240, rock: 0.18, tank: 0.37, freq: 66 },
-    { min: 430, spd: 3.4, width: 180, mine: 0.250, rock: 0.19, tank: 0.39, freq: 62 },
-    { min: 505, spd: 3.6, width: 178, mine: 0.260, rock: 0.20, tank: 0.41, freq: 58 },
-    { min: 585, spd: 3.7, width: 175, mine: 0.270, rock: 0.21, tank: 0.43, freq: 55 },
-    { min: 670, spd: 3.9, width: 172, mine: 0.280, rock: 0.22, tank: 0.45, freq: 52 },
-    { min: 760, spd: 4.0, width: 170, mine: 0.290, rock: 0.23, tank: 0.47, freq: 49 },
-    { min: 855, spd: 4.2, width: 168, mine: 0.300, rock: 0.24, tank: 0.49, freq: 46 },
-    { min: 955, spd: 4.5, width: 165, mine: 0.310, rock: 0.25, tank: 0.51, freq: 43 }
+    { min: 0,   spd: 2.3, width: 218, mine: 0.180, rock: 0.12, tank: 0.25, freq: 90 },
+    { min: 40,  spd: 2.4, width: 213, mine: 0.190, rock: 0.13, tank: 0.27, freq: 87 },
+    { min: 85,  spd: 2.5, width: 208, mine: 0.200, rock: 0.14, tank: 0.29, freq: 83 },
+    { min: 130, spd: 2.7, width: 203, mine: 0.210, rock: 0.15, tank: 0.31, freq: 79 },
+    { min: 180, spd: 2.9, width: 198, mine: 0.220, rock: 0.16, tank: 0.33, freq: 75 },
+    { min: 235, spd: 3.1, width: 193, mine: 0.230, rock: 0.17, tank: 0.35, freq: 71 },
+    { min: 295, spd: 3.2, width: 188, mine: 0.240, rock: 0.18, tank: 0.37, freq: 67 },
+    { min: 360, spd: 3.4, width: 183, mine: 0.250, rock: 0.19, tank: 0.39, freq: 63 },
+    { min: 430, spd: 3.6, width: 178, mine: 0.260, rock: 0.20, tank: 0.41, freq: 59 },
+    { min: 505, spd: 3.8, width: 176, mine: 0.270, rock: 0.21, tank: 0.43, freq: 55 },
+    { min: 585, spd: 3.9, width: 173, mine: 0.280, rock: 0.22, tank: 0.45, freq: 52 },
+    { min: 670, spd: 4.1, width: 170, mine: 0.290, rock: 0.23, tank: 0.47, freq: 49 },
+    { min: 760, spd: 4.2, width: 168, mine: 0.300, rock: 0.24, tank: 0.49, freq: 46 },
+    { min: 855, spd: 4.4, width: 166, mine: 0.310, rock: 0.25, tank: 0.51, freq: 43 },
+    { min: 955, spd: 4.7, width: 163, mine: 0.320, rock: 0.26, tank: 0.53, freq: 40 }
 ];
 
 const levelThemes = [
@@ -404,28 +418,17 @@ function update() {
             } else if(rand<curCfg.tank+0.05 && currentLevel>=2) {
                 enemies.push({type:'warship',x:nx+(Math.random()-0.5)*(riverWidth*0.6),y:last.y,vx:(Math.random()-0.5)*1.5,shot:0,muzzleFlash:0});
             } else if(rand<curCfg.tank+0.25) {
-                const cr=Math.random();
                 const sx=nx+(Math.random()-0.5)*(riverWidth*0.7),sy=last.y,sp=Math.random()*Math.PI*2;
-                if(currentLevel>=5){
-                    if(cr<0.20) enemies.push({type:'octopus',x:sx,y:sy,vx:(Math.random()-0.5)*2,swimPhase:sp});
-                    else if(cr<0.40) enemies.push({type:'shark',x:sx,y:sy,vx:(Math.random()-0.5)*3,swimPhase:sp});
-                    else if(cr<0.60) enemies.push({type:'jellyfish',x:sx,y:sy,vx:(Math.random()-0.5)*0.5,swimPhase:sp});
-                    else if(cr<0.80) enemies.push({type:'urchin',x:sx,y:sy,vx:0,swimPhase:sp});
-                    else enemies.push({type:'stingray',x:sx,y:sy,vx:(Math.random()-0.5)*2,swimPhase:sp});
-                }else if(currentLevel>=3){
-                    if(cr<0.25) enemies.push({type:'shark',x:sx,y:sy,vx:(Math.random()-0.5)*3,swimPhase:sp});
-                    else if(cr<0.50) enemies.push({type:'jellyfish',x:sx,y:sy,vx:(Math.random()-0.5)*0.5,swimPhase:sp});
-                    else if(cr<0.75) enemies.push({type:'urchin',x:sx,y:sy,vx:0,swimPhase:sp});
-                    else enemies.push({type:'stingray',x:sx,y:sy,vx:(Math.random()-0.5)*2,swimPhase:sp});
-                }else if(currentLevel>=2){
-                    if(cr<0.35) enemies.push({type:'jellyfish',x:sx,y:sy,vx:(Math.random()-0.5)*0.5,swimPhase:sp});
-                    else if(cr<0.65) enemies.push({type:'urchin',x:sx,y:sy,vx:0,swimPhase:sp});
-                    else enemies.push({type:'stingray',x:sx,y:sy,vx:(Math.random()-0.5)*1.5,swimPhase:sp});
-                }else{
-                    if(cr<0.40) enemies.push({type:'jellyfish',x:sx,y:sy,vx:(Math.random()-0.5)*0.5,swimPhase:sp});
-                    else if(cr<0.70) enemies.push({type:'urchin',x:sx,y:sy,vx:0,swimPhase:sp});
-                    else enemies.push({type:'stingray',x:sx,y:sy,vx:(Math.random()-0.5)*1,swimPhase:sp});
-                }
+                let pool;
+                if(currentLevel>=5) pool=['octopus','shark','jellyfish','urchin','stingray'];
+                else if(currentLevel>=3) pool=['shark','jellyfish','urchin','stingray'];
+                else if(currentLevel>=2) pool=['jellyfish','urchin','stingray'];
+                else pool=['jellyfish','urchin','stingray'];
+                if(pool.length>1) pool=pool.filter(t=>t!==lastSeaCreature);
+                const pick=pool[Math.floor(Math.random()*pool.length)];
+                lastSeaCreature=pick;
+                const vxMap={octopus:(Math.random()-0.5)*2,shark:(Math.random()-0.5)*3,jellyfish:(Math.random()-0.5)*0.5,urchin:0,stingray:(Math.random()-0.5)*2};
+                enemies.push({type:pick,x:sx,y:sy,vx:vxMap[pick],swimPhase:sp});
             } else if(rand<curCfg.tank+0.25+curCfg.rock) {
                 items.push({type:'rock',x:nx+(Math.random()-0.5)*(riverWidth-50),y:last.y,size:14+Math.random()*10,
                     points:Array.from({length:8},()=>Math.random()*0.4+0.8),
@@ -1068,7 +1071,7 @@ function drawShip() {
     ctx.beginPath();ctx.ellipse(2,4,13,22,0.03,0,Math.PI*2);ctx.fill();
 
     if(img && img.complete && img.naturalWidth > 0) {
-        const shipH = 60 * (1 + (Math.min(currentLevel, 7) - 1) * 0.05);
+        const shipH = 60 * (1 + (Math.min(currentLevel, 7) - 1) * 0.10);
         const aspect = img.naturalWidth / img.naturalHeight;
         const shipW = shipH * aspect;
         ctx.drawImage(img, -shipW/2, -shipH/2, shipW, shipH);
