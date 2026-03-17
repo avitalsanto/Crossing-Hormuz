@@ -266,9 +266,9 @@ let scoreMultTimer = 0, magnetTimer = 0, speedBoostTimer = 0, slowTimer = 0;
 const ship = { x: 0, y: 0, angle: 0, targetAngle: 0, bobPhase: 0 };
 
 const config = [
-    { min: 0,   spd: 2.4, width: 215, mine: 0.205, rock: 0.13, tank: 0.27, freq: 87 },
-    { min: 40,  spd: 2.5, width: 210, mine: 0.215, rock: 0.14, tank: 0.29, freq: 84 },
-    { min: 85,  spd: 2.6, width: 205, mine: 0.225, rock: 0.15, tank: 0.31, freq: 80 },
+    { min: 0,   spd: 2.4, width: 215, mine: 0.205, rock: 0.13, tank: 0.27, freq: 50 },
+    { min: 40,  spd: 2.5, width: 210, mine: 0.215, rock: 0.14, tank: 0.29, freq: 65 },
+    { min: 85,  spd: 2.6, width: 205, mine: 0.225, rock: 0.15, tank: 0.31, freq: 72 },
     { min: 130, spd: 2.8, width: 200, mine: 0.235, rock: 0.16, tank: 0.33, freq: 76 },
     { min: 180, spd: 3.0, width: 195, mine: 0.245, rock: 0.17, tank: 0.35, freq: 72 },
     { min: 235, spd: 3.2, width: 190, mine: 0.255, rock: 0.18, tank: 0.37, freq: 68 },
@@ -1506,6 +1506,16 @@ startBtn.onclick=()=>{
     shieldTimer=0;invuln=0;frameCount=0;scoreMultTimer=0;magnetTimer=0;speedBoostTimer=0;slowTimer=0;lastSeaCreature='';
     initRiver();updateUI();lvlVal.innerText='1';scoreVal.innerText='0';
     overlay.classList.add('hidden');gameActive=true;
+    const cx=cW/2;
+    for(let k=0;k<4;k++){
+        const iy=ship.y-180-k*120;
+        const rp=nearestRiverPt(iy);if(!rp)continue;
+        const rx=rp.x;
+        if(k===0) items.push({type:'life',x:rx+(Math.random()-0.5)*(riverWidth-50),y:iy,phase:Math.random()*Math.PI*2});
+        else if(k===1){const cr=['jellyfish','urchin','stingray'];const pick=cr[Math.floor(Math.random()*cr.length)];const vxMap={jellyfish:(Math.random()-0.5)*0.5,urchin:0,stingray:(Math.random()-0.5)*2};enemies.push({type:pick,x:rx+(Math.random()-0.5)*(riverWidth*0.6),y:iy,vx:vxMap[pick],swimPhase:Math.random()*Math.PI*2});}
+        else if(k===2) items.push({type:Math.random()<0.5?'mine':'rock',x:rx+(Math.random()-0.5)*(riverWidth-40),y:iy,phase:Math.random()*Math.PI*2,size:16,points:Array.from({length:8},()=>Math.random()*0.4+0.8),cracks:Array.from({length:3},()=>({a1:Math.random()*Math.PI*2,len:0.4}))});
+        else items.push({type:'star',x:rx+(Math.random()-0.5)*(riverWidth-40),y:iy,phase:Math.random()*Math.PI*2});
+    }
 };
 
 window.onresize=resize;
