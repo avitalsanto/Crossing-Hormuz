@@ -263,7 +263,7 @@ function generateTextures() {
 
 let gameActive = false, score = 0, highScore = parseInt(localStorage.getItem('riverHighScore') || '0');
 let currentLevel = 1, lives = 3, invuln = 0, shieldTimer = 0, shake = 0, frameCount = 0;
-let baseSpeed = 2.1, speedBoost = 1.0, riverWidth = 200;
+let baseSpeed = 2.4, speedBoost = 1.0, riverWidth = 200;
 let riverPoints = [], items = [], enemies = [], bullets = [], particles = [], clouds = [], wakes = [];
 let airplanes = [], bombs = [], popups = [], birds = [];
 let lastSeaCreature = '';
@@ -271,21 +271,21 @@ let scoreMultTimer = 0, magnetTimer = 0, speedBoostTimer = 0;
 const ship = { x: 0, y: 0, angle: 0, targetAngle: 0, bobPhase: 0 };
 
 const config = [
-    { min: 0,   spd: 2.3, width: 218, mine: 0.180, rock: 0.12, tank: 0.25, freq: 90 },
-    { min: 40,  spd: 2.4, width: 213, mine: 0.190, rock: 0.13, tank: 0.27, freq: 87 },
-    { min: 85,  spd: 2.5, width: 208, mine: 0.200, rock: 0.14, tank: 0.29, freq: 83 },
-    { min: 130, spd: 2.7, width: 203, mine: 0.210, rock: 0.15, tank: 0.31, freq: 79 },
-    { min: 180, spd: 2.9, width: 198, mine: 0.220, rock: 0.16, tank: 0.33, freq: 75 },
-    { min: 235, spd: 3.1, width: 193, mine: 0.230, rock: 0.17, tank: 0.35, freq: 71 },
-    { min: 295, spd: 3.2, width: 188, mine: 0.240, rock: 0.18, tank: 0.37, freq: 67 },
-    { min: 360, spd: 3.4, width: 183, mine: 0.250, rock: 0.19, tank: 0.39, freq: 63 },
-    { min: 430, spd: 3.6, width: 178, mine: 0.260, rock: 0.20, tank: 0.41, freq: 59 },
-    { min: 505, spd: 3.8, width: 176, mine: 0.270, rock: 0.21, tank: 0.43, freq: 55 },
-    { min: 585, spd: 3.9, width: 173, mine: 0.280, rock: 0.22, tank: 0.45, freq: 52 },
-    { min: 670, spd: 4.1, width: 170, mine: 0.290, rock: 0.23, tank: 0.47, freq: 49 },
-    { min: 760, spd: 4.2, width: 168, mine: 0.300, rock: 0.24, tank: 0.49, freq: 46 },
-    { min: 855, spd: 4.4, width: 166, mine: 0.310, rock: 0.25, tank: 0.51, freq: 43 },
-    { min: 955, spd: 4.7, width: 163, mine: 0.320, rock: 0.26, tank: 0.53, freq: 40 }
+    { min: 0,   spd: 2.4, width: 215, mine: 0.190, rock: 0.13, tank: 0.27, freq: 87 },
+    { min: 40,  spd: 2.5, width: 210, mine: 0.200, rock: 0.14, tank: 0.29, freq: 84 },
+    { min: 85,  spd: 2.6, width: 205, mine: 0.210, rock: 0.15, tank: 0.31, freq: 80 },
+    { min: 130, spd: 2.8, width: 200, mine: 0.220, rock: 0.16, tank: 0.33, freq: 76 },
+    { min: 180, spd: 3.0, width: 195, mine: 0.230, rock: 0.17, tank: 0.35, freq: 72 },
+    { min: 235, spd: 3.2, width: 190, mine: 0.240, rock: 0.18, tank: 0.37, freq: 68 },
+    { min: 295, spd: 3.3, width: 185, mine: 0.250, rock: 0.19, tank: 0.39, freq: 64 },
+    { min: 360, spd: 3.5, width: 180, mine: 0.260, rock: 0.20, tank: 0.41, freq: 60 },
+    { min: 430, spd: 3.7, width: 175, mine: 0.270, rock: 0.21, tank: 0.43, freq: 56 },
+    { min: 505, spd: 3.9, width: 173, mine: 0.280, rock: 0.22, tank: 0.45, freq: 52 },
+    { min: 585, spd: 4.0, width: 170, mine: 0.290, rock: 0.23, tank: 0.47, freq: 49 },
+    { min: 670, spd: 4.2, width: 167, mine: 0.300, rock: 0.24, tank: 0.49, freq: 46 },
+    { min: 760, spd: 4.3, width: 165, mine: 0.310, rock: 0.25, tank: 0.51, freq: 43 },
+    { min: 855, spd: 4.5, width: 163, mine: 0.320, rock: 0.26, tank: 0.53, freq: 40 },
+    { min: 955, spd: 4.8, width: 160, mine: 0.330, rock: 0.27, tank: 0.55, freq: 37 }
 ];
 
 const levelThemes = [
@@ -415,7 +415,7 @@ function update() {
                 const tankSide=Math.random()<0.5?-1:1;const tankX=Math.max(25,Math.min(cW-25,nx+tankSide*(riverWidth/2+90+Math.random()*20)));
                 const tankOverlap=bankDecor.some(d=>Math.abs(d.x-tankX)<40&&Math.abs(d.y-last.y)<50);
                 if(!tankOverlap) enemies.push({type:'tank',x:tankX,y:last.y,shot:0,muzzleFlash:0});
-            } else if(rand<curCfg.tank+0.05 && currentLevel>=2) {
+            } else if(rand<curCfg.tank+0.07 && currentLevel>=2) {
                 enemies.push({type:'warship',x:nx+(Math.random()-0.5)*(riverWidth*0.6),y:last.y,vx:(Math.random()-0.5)*1.5,shot:0,muzzleFlash:0});
             } else if(rand<curCfg.tank+0.25) {
                 const sx=nx+(Math.random()-0.5)*(riverWidth*0.7),sy=last.y,sp=Math.random()*Math.PI*2;
