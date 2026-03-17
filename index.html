@@ -262,7 +262,7 @@ let baseSpeed = 2.4, speedBoost = 1.0, riverWidth = 200;
 let riverPoints = [], items = [], enemies = [], bullets = [], particles = [], clouds = [], wakes = [];
 let airplanes = [], bombs = [], popups = [], birds = [];
 let lastSeaCreature = '';
-let scoreMultTimer = 0, magnetTimer = 0, speedBoostTimer = 0;
+let scoreMultTimer = 0, magnetTimer = 0, speedBoostTimer = 0, slowTimer = 0;
 const ship = { x: 0, y: 0, angle: 0, targetAngle: 0, bobPhase: 0 };
 
 const config = [
@@ -435,6 +435,7 @@ function update() {
                 else if(ir<0.19) items.push({type:'diamond',x:nx+(Math.random()-0.5)*(riverWidth-40),y:last.y,phase:Math.random()*Math.PI*2});
                 else if(ir<0.24) items.push({type:'bolt',x:nx+(Math.random()-0.5)*(riverWidth-40),y:last.y,phase:Math.random()*Math.PI*2});
                 else if(ir<0.29) items.push({type:'shell',x:nx+(Math.random()-0.5)*(riverWidth-40),y:last.y,phase:Math.random()*Math.PI*2});
+                else if(ir<0.32) items.push({type:'seaweed',x:nx+(Math.random()-0.5)*(riverWidth-40),y:last.y,phase:Math.random()*Math.PI*2});
                 else items.push({type:Math.random()<curCfg.mine?'mine':'life',x:nx+(Math.random()-0.5)*(riverWidth-40),y:last.y,phase:Math.random()*Math.PI*2});
             }
         }
@@ -514,7 +515,7 @@ function update() {
     }
     for(let i=items.length-1;i>=0;i--){
         const it=items[i];it.y+=scrollSpd;if(it.phase!==undefined)it.phase+=0.05;
-        if(magnetTimer>0&&it.type!=='mine'&&it.type!=='rock'){const mdx=ship.x-it.x,mdy=ship.y-it.y,md=Math.sqrt(mdx*mdx+mdy*mdy);if(md<160&&md>5){it.x+=mdx/md*3;it.y+=mdy/md*3;}}
+        if(magnetTimer>0&&it.type!=='mine'&&it.type!=='rock'&&it.type!=='seaweed'){const mdx=ship.x-it.x,mdy=ship.y-it.y,md=Math.sqrt(mdx*mdx+mdy*mdy);if(md<160&&md>5){it.x+=mdx/md*3;it.y+=mdy/md*3;}}
         const cd=it.type==='rock'?it.size*1.1:28;
         if(dist(ship.x,ship.y,it.x,it.y)<cd){
             if(it.type==='mine'||it.type==='rock'){if(shieldTimer>0){createExplosion(it.x,it.y,'#5b9ab5',12);playExplosion();}else{hit(it.type==='mine'?'עלית על מוקש!':'התנגשת בסלע!');createExplosion(it.x,it.y,it.type==='mine'?'#a33':'#5a6570',it.type==='rock'?10:25);}}
@@ -524,6 +525,7 @@ function update() {
             else if(it.type==='diamond'){score+=300;scoreVal.innerText=Math.floor(score/10);createExplosion(it.x,it.y,'#5bc0de',14);playPickup();playTone(1200,0.1);spawnPopup(it.x,it.y,'💎','+30','#5bc0de');}
             else if(it.type==='bolt'){speedBoostTimer=180;createExplosion(it.x,it.y,'#f0e060',14);playPickup();playTone(800,0.1);spawnPopup(it.x,it.y,'⚡','טורבו!','#f0e060');}
             else if(it.type==='shell'){magnetTimer=300;createExplosion(it.x,it.y,'#e8a060',14);playPickup();playTone(500,0.15);spawnPopup(it.x,it.y,'🐚','צדפת קסם!','#e8a060');}
+            else if(it.type==='seaweed'){slowTimer=150;createExplosion(it.x,it.y,'#2a6030',14);playTone(200,0.15,'sawtooth',0.05);spawnPopup(it.x,it.y,'🪸','האטה!','#2a6030');}
             items.splice(i,1);continue;
         }
         if(it.y>cH+100)items.splice(i,1);
@@ -1015,6 +1017,9 @@ function drawItem(it) {
     } else if(it.type==='shell'){
         ctx.globalAlpha=0.15;ctx.fillStyle='#e8a060';ctx.beginPath();ctx.arc(0,bob,18,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
         ctx.font='26px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🐚',0,bob);
+    } else if(it.type==='seaweed'){
+        ctx.globalAlpha=0.15;ctx.fillStyle='rgba(30,80,40,1)';ctx.beginPath();ctx.arc(0,bob,18,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+        ctx.font='26px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🪸',0,bob);
     }
     ctx.restore();
 }
@@ -1489,6 +1494,7 @@ function handleInput(){
     if(ml){ship.x-=4.5;ship.targetAngle=-0.22;}else if(mr){ship.x+=4.5;ship.targetAngle=0.22;}else ship.targetAngle=0;
     const spdStep=(touchSpeedUp||touchSpeedDown)?0.12:0.05;
     if(speedBoostTimer>0){speedBoost=2.5;}else if(mu)speedBoost=Math.min(2.5,speedBoost+spdStep);else if(md)speedBoost=Math.max(0.5,speedBoost-spdStep);else speedBoost+=(1-speedBoost)*0.05;
+    if(slowTimer>0){speedBoost=Math.min(speedBoost,0.45);slowTimer--;}
     ship.x=Math.max(20,Math.min(cW-20,ship.x));
 }
 
@@ -1497,7 +1503,7 @@ function loop(){update();draw();requestAnimationFrame(loop);}
 startBtn.onclick=()=>{
     initAudio();score=0;lives=3;currentLevel=1;
     baseSpeed=config[0].spd;riverWidth=config[0].width;
-    shieldTimer=0;invuln=0;frameCount=0;scoreMultTimer=0;magnetTimer=0;speedBoostTimer=0;lastSeaCreature='';
+    shieldTimer=0;invuln=0;frameCount=0;scoreMultTimer=0;magnetTimer=0;speedBoostTimer=0;slowTimer=0;lastSeaCreature='';
     initRiver();updateUI();lvlVal.innerText='1';scoreVal.innerText='0';
     overlay.classList.add('hidden');gameActive=true;
 };
